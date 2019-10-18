@@ -1,1 +1,1 @@
-# 3D_Graphics
+# ETU-3D-Graphics
