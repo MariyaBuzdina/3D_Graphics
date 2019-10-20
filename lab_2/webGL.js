@@ -8,9 +8,9 @@ function webGLStart() {
     const canvas = document.getElementById("central_canvas");
     initGL(canvas);
     initShaders();
-    figures = [new Rectangle(new Point3(1.0, 0.5, 0.0), 2, 2, [0.0, 0.0, 0.0, 1.0]),
-        new Triangle(new Point3(-1.0, 3.5, -2.0), new Point3(-1.8, 1.0, -2.0), new Point3(-0.2, 1.0, -2.0), [1.0, 1.0, 1.0, 1.0]),
-        new Circle(new Point3(-2.0, -2.0, -4.0), 2, [1.0, 0.0, 0.5, 1.0])
+    figures = [new Rectangle(new Point3(1.0, 0.5, -1.0), 3, 3, [0.0, 0.0, 0.0, 1.0]),
+        new Triangle(new Point3(0.0, 3.5, -0.9), new Point3(-0.8, 1.0, -0.9), new Point3(0.8, 1.0, -0.9), [1.0, 1.0, 1.0, 1.0]),
+        new Circle(new Point3(0.0, -0.5, -1.1), 2, [1.0, 0.0, 0.5, 1.0])
     ];
     initBuffers();
     gl.clearColor(0.0, 0.5, 1.0, 0.5);
@@ -132,27 +132,27 @@ function drawScene() {
 
     //Draw Rectangle
     mvPushMatrix();
-    mat4.translate(mvMatrix, [0.0, 0.0, -50.0]);
-    mat4.scale(mvMatrix, [5, 5, 1]);
-    mat4.rotate(mvMatrix, degToRad(45), [1, 1, 1]);
+    mat4.translate(mvMatrix, [0.0, 0.0, 0.0]); //перемещение
+    mat4.scale(mvMatrix, [1, 1, 1]); //масштабирование
+    mat4.rotate(mvMatrix, degToRad(-270), [1, 1, 1]); // поворот
     setBuffersToShaders(figures[0].getPositionBuffer(), figures[0].getColorBuffer());
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, figures[0].getPositionBuffer().numItems);
     mvPopMatrix();
 
     //Draw Triangle
     mvPushMatrix();
-    mat4.translate(mvMatrix, [0.0, 0.0, -50.0]);
-    mat4.scale(mvMatrix, [5, 5, 1]);
-    mat4.rotate(mvMatrix, degToRad(45), [1, 1, 1]);
+    mat4.translate(mvMatrix, [-8.0, -3.0, -5.0]); //перемещение
+    mat4.scale(mvMatrix, [5, 1, 5]);//масштабирование
+    mat4.rotate(mvMatrix, degToRad(-90), [1, 1, 1]); // поворот
     setBuffersToShaders(figures[1].getPositionBuffer(), figures[1].getColorBuffer());
     gl.drawArrays(gl.TRIANGLES, 0, figures[1].getPositionBuffer().numItems);
     mvPopMatrix();
 
     //Draw Circle
     mvPushMatrix();
-    mat4.translate(mvMatrix, [0.0, 0.0, -50.0]);
-    mat4.scale(mvMatrix, [5, 5, 1]);
-    mat4.rotate(mvMatrix, degToRad(45), [1, 1, 1]);
+    mat4.translate(mvMatrix, [4.0, 1.0, -10.0]); //перемещение
+    mat4.scale(mvMatrix, [2, 2, 1]);//масштабирование
+    mat4.rotate(mvMatrix, degToRad(45), [1, 1, 1]); // поворот
     setBuffersToShaders(figures[2].getPositionBuffer(), figures[2].getColorBuffer());
     gl.drawArrays(gl.TRIANGLE_FAN, 0, figures[2].getPositionBuffer().numItems);
     mvPopMatrix();

@@ -1,8 +1,8 @@
 let gl;
 let figures = [];
 let shaderProgram;
-const mvMatrix = mat4.create();
-const pMatrix = mat4.create();
+let mvMatrix = mat4.create();
+let pMatrix = mat4.create();
 
 function webGLStart() {
     const canvas = document.getElementById("central_canvas");
@@ -16,6 +16,8 @@ function webGLStart() {
     gl.clearColor(0.0, 0.5, 1.0, 0.5);
     gl.lineWidth(3);
     gl.enable(gl.DEPTH_TEST);
+    document.onkeyup = handleKeyUp;
+    document.onkeydown = handleKeyDown;
 
     drawScene();
 }
@@ -97,27 +99,63 @@ function initBuffers() {
     }
 }
 
+let mvMatrixStack = [];
+
+function mvPushMatrix() {
+    let copy = mat4.create();
+    mat4.set(mvMatrix, copy);
+    mvMatrixStack.push(copy);
+}
+
+function mvPopMatrix() {
+    if (mvMatrixStack.length == 0) {
+        throw "Invalid popMatrix!";
+    }
+    mvMatrix = mvMatrixStack.pop();
+}
+
+
 function drawScene() {
     gl.enable(gl.DEPTH_TEST);
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
-
     mat4.identity(mvMatrix);
+    if (document.getElementById("ortho").checked){
+        mat4.ortho(-gl.viewportWidth / 100, gl.viewportWidth/100, -gl.viewportHeight/100, gl.viewportHeight/100, 0.1, 100.0, pMatrix);
+    }
+    else {
+        mat4.perspective(60, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
+    }
+
+    mat4.lookAt([xCameraPos, yCameraPos, zCameraPos], [0, 0, 0], [0, 1, 0], mvMatrix);
 
     //Draw Rectangle
-    mat4.translate(mvMatrix, [0.0, 0.0, -7.0]);
+    mvPushMatrix();
+    mat4.translate(mvMatrix, [0.0, 0.0, -50.0]);
+    mat4.scale(mvMatrix, [5, 5, 1]);
+    mat4.rotate(mvMatrix, degToRad(45), [1, 1, 1]);
     setBuffersToShaders(figures[0].getPositionBuffer(), figures[0].getColorBuffer());
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, figures[0].getPositionBuffer().numItems);
+    mvPopMatrix();
 
-    //Draw Net
+    //Draw Triangle
+    mvPushMatrix();
+    mat4.translate(mvMatrix, [0.0, 0.0, -50.0]);
+    mat4.scale(mvMatrix, [5, 5, 1]);
+    mat4.rotate(mvMatrix, degToRad(45), [1, 1, 1]);
     setBuffersToShaders(figures[1].getPositionBuffer(), figures[1].getColorBuffer());
     gl.drawArrays(gl.TRIANGLES, 0, figures[1].getPositionBuffer().numItems);
+    mvPopMatrix();
 
     //Draw Circle
+    mvPushMatrix();
+    mat4.translate(mvMatrix, [0.0, 0.0, -50.0]);
+    mat4.scale(mvMatrix, [5, 5, 1]);
+    mat4.rotate(mvMatrix, degToRad(45), [1, 1, 1]);
     setBuffersToShaders(figures[2].getPositionBuffer(), figures[2].getColorBuffer());
     gl.drawArrays(gl.TRIANGLE_FAN, 0, figures[2].getPositionBuffer().numItems);
+    mvPopMatrix();
 
 }
 
@@ -147,3 +185,42 @@ function update_scene() {
     drawScene();
 }
 
+let currentlyPressedKeys = {};
+let yCameraPos = 0, zCameraPos = 7, xCameraPos = 0;
+
+function handleKeyDown(event) {
+    currentlyPressedKeys[event.keyCode] = true;
+    handleKeys();
+}
+
+function handleKeyUp(event) {
+    currentlyPressedKeys[event.keyCode] = false;
+}
+
+function handleKeys() {
+    if (currentlyPressedKeys[33]) {
+        // Page Up
+        zCameraPos = zCameraPos < 100 ? zCameraPos + 1 : zCameraPos;
+    }
+    if (currentlyPressedKeys[34]) {
+        // Page Down
+        zCameraPos = zCameraPos > -100 ? zCameraPos - 1 : zCameraPos;
+    }
+    if (currentlyPressedKeys[37]) {
+        // Left cursor key
+        xCameraPos = xCameraPos < 10 ? xCameraPos + 1 : xCameraPos;
+    }
+    if (currentlyPressedKeys[39]) {
+        // Right cursor key
+        xCameraPos = xCameraPos > -10 ? xCameraPos - 1 : xCameraPos;
+    }
+    if (currentlyPressedKeys[38]) {
+        // Up cursor key
+        yCameraPos = yCameraPos < 10 ? yCameraPos + 1 : yCameraPos;
+    }
+    if (currentlyPressedKeys[40]) {
+        // Down cursor key
+        yCameraPos = yCameraPos > -10 ? yCameraPos - 1 : yCameraPos;
+    }
+    drawScene();
+}
