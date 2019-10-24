@@ -10,7 +10,7 @@ function webGLStart() {
     initShaders();
     figures = [new Rectangle(new Point3(1.0, 0.5, -1.0), 3, 3, [0.0, 0.0, 0.0, 1.0]),
         new Triangle(new Point3(0.0, 3.5, -0.9), new Point3(-0.8, 1.0, -0.9), new Point3(0.8, 1.0, -0.9), [1.0, 1.0, 1.0, 1.0]),
-        new Circle(new Point3(0.0, -0.5, -1.1), 2, [1.0, 0.0, 0.5, 1.0])
+        new Circle(new Point3(0.0, 0, 0), 2, [1.0, 0.0, 0.5, 1.0])
     ];
     initBuffers();
     gl.clearColor(0.0, 0.5, 1.0, 0.5);
@@ -150,9 +150,9 @@ function drawScene() {
 
     //Draw Circle
     mvPushMatrix();
-    mat4.translate(mvMatrix, [4.0, 1.0, -10.0]); //перемещение
-    mat4.scale(mvMatrix, [2, 2, 1]);//масштабирование
-    mat4.rotate(mvMatrix, degToRad(45), [1, 1, 1]); // поворот
+    mat4.translate(mvMatrix, [2.0, 1.0, 0.0]); //перемещение
+    mat4.scale(mvMatrix, [1, 1, 1]);//масштабирование
+    mat4.rotate(mvMatrix, degToRad(90), [0, 1, 1]); // поворот
     setBuffersToShaders(figures[2].getPositionBuffer(), figures[2].getColorBuffer());
     gl.drawArrays(gl.TRIANGLE_FAN, 0, figures[2].getPositionBuffer().numItems);
     mvPopMatrix();
