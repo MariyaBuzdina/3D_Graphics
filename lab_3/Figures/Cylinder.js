@@ -4,7 +4,7 @@ class Cylinder extends Figure {
         this.radius = 1;
         this.height = 1;
         this.heightSegments = 1;
-        this.radialSegments = 360;
+        this.radialSegments = 50;
         this.index = 0;
     }
 
