@@ -1,15 +1,19 @@
 class Sphere extends Figure {
     constructor(center, radius, angle,  scale,  color) {
-        super(center, angle,  scale);
-        this.name = "Circle";
+        super(center, angle,  scale, color);
         this.radius = radius;
-        this.color = color;
+        this.latitudeBands = 30;
+        this.longitudeBands = 30;
     }
 
     initBuffers(){
         this.generateVerticesMatrix();
-        this.generateColorMatrix();
+        this.generateIndexesMatrix();
+
         this.initPositionBuffer();
+        this.initIndexBuffer();
+        this.initTextureCoordsBuffer();
+        this.initNormalesBuffer();
         this.initColorBuffer();
     }
 
@@ -21,17 +25,45 @@ class Sphere extends Figure {
         this.colors = colors;
     }
 
-    generateVerticesMatrix(){
-        let vertices = [];
-        let offset = 0.1;
-        for (let theta = 0; theta < Math.PI; theta += offset) {
-            for (let phi = 0; phi < 2 * Math.PI; phi += offset) {
-                let x = this.center[0] + this.radius * Math.sin(theta) * Math.cos(phi);
-                let y = this.center[1] + this.radius * Math.sin(theta) * Math.sin(phi);
-                let z = this.center[2] + this.radius * Math.cos(theta);
-                vertices.push(x, y, z);
+    generateIndexesMatrix(){
+        for (let latNumber = 0; latNumber < this.latitudeBands; latNumber++) {
+            for (let longNumber = 0; longNumber < this.longitudeBands; longNumber++) {
+                let first = (latNumber * (this.longitudeBands + 1)) + longNumber;
+                let second = first + this.longitudeBands + 1;
+                this.indices.push(first);
+                this.indices.push(second);
+                this.indices.push(first + 1);
+                this.indices.push(second);
+                this.indices.push(second + 1);
+                this.indices.push(first + 1);
             }
         }
-        this.vertices = vertices;``
+    }
+
+    generateVerticesMatrix(){
+        for (let latNumber=0; latNumber <= this.latitudeBands; latNumber++) {
+            let theta = latNumber * Math.PI / this.latitudeBands;
+            let sinTheta = Math.sin(theta);
+            let cosTheta = Math.cos(theta);
+            for (let longNumber=0; longNumber <= this.longitudeBands; longNumber++) {
+                let phi = longNumber * 2 * Math.PI / this.longitudeBands;
+                let sinPhi = Math.sin(phi);
+                let cosPhi = Math.cos(phi);
+                let x = cosPhi * sinTheta;
+                let y = cosTheta;
+                let z = sinPhi * sinTheta;
+                let u = 1 - (longNumber / this.longitudeBands);
+                let v = 1 - (latNumber / this.latitudeBands);
+                this.vertexNormales.push(x);
+                this.vertexNormales.push(y);
+                this.vertexNormales.push(z);
+                this.textureCoords.push(u);
+                this.textureCoords.push(v);
+                this.vertices.push(this.radius * x);
+                this.vertices.push(this.radius * y);
+                this.vertices.push(this.radius * z);
+            }
+        }
+
     }
 }

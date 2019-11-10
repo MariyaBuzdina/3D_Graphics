@@ -1,13 +1,5 @@
-class Point3 {
-    constructor(x=0, y=0, z=0){
-        this.x = x;
-        this.y = y;
-        this.z = z
-    }
-
-    toArray(){
-        return [this.x, this.y, this.z];
-    }
+function isPowerOf2(value) {
+    return (value & (value - 1)) == 0;
 }
 
 function degToRad(degrees) {
