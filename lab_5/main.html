@@ -15,12 +15,38 @@
     <script id="shader-fs" type="x-shader/x-fragment">
         precision mediump float;
         varying vec2 vTextureCoord;
-        varying vec3 vLightWeighting;
+        varying vec3 vTransformedNormal;
+        varying vec4 vPosition;
+        uniform float uMaterialShininess;
+        uniform bool uShowSpecularHighlights;
+        uniform bool uUseLighting;
+        uniform vec3 uAmbientColor;
+        uniform vec3 uPointLightingLocation;
+        uniform vec3 uPointLightingSpecularColor;
+        uniform vec3 uPointLightingDiffuseColor;
         uniform sampler2D uSampler;
         void main(void) {
-            vec4 textureColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
-            gl_FragColor = vec4(textureColor.rgb * vLightWeighting, textureColor.a);
-        }
+            vec3 lightWeighting;
+            if (!uUseLighting) {
+                lightWeighting = vec3(1.0, 1.0, 1.0);
+            } else {
+                vec3 lightDirection = normalize(uPointLightingLocation - vPosition.xyz);
+                vec3 normal = normalize(vTransformedNormal);
+                float specularLightWeighting = 0.0;
+                if (uShowSpecularHighlights) {
+                    vec3 eyeDirection = normalize(-vPosition.xyz);
+                    vec3 reflectionDirection = reflect(-lightDirection, normal);
+                    specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), uMaterialShininess);
+                }
+                float diffuseLightWeighting = max(dot(normal, lightDirection), 0.0);
+                lightWeighting = uAmbientColor
+                    + uPointLightingSpecularColor * specularLightWeighting
+                    + uPointLightingDiffuseColor * diffuseLightWeighting;
+            }
+            vec4 fragmentColor;
+            fragmentColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+            gl_FragColor = vec4(fragmentColor.rgb * lightWeighting, fragmentColor.a);
+    }
     </script>
 
     <script id="shader-vs" type="x-shader/x-vertex">
@@ -30,24 +56,14 @@
         uniform mat4 uMVMatrix;
         uniform mat4 uPMatrix;
         uniform mat3 uNMatrix;
-        uniform vec3 uAmbientColor;
-        uniform vec3 uPointLightingLocation;
-        uniform vec3 uPointLightingColor;
-        uniform bool uUseLighting;
         varying vec2 vTextureCoord;
-        varying vec3 vLightWeighting;
+        varying vec3 vTransformedNormal;
+        varying vec4 vPosition;
         void main(void) {
-            vec4 mvPosition = uMVMatrix * vec4(aVertexPosition, 1.0);
-            gl_Position = uPMatrix * mvPosition;
+            vPosition = uMVMatrix * vec4(aVertexPosition, 1.0);
+            gl_Position = uPMatrix * vPosition;
             vTextureCoord = aTextureCoord;
-            if (!uUseLighting) {
-                vLightWeighting = vec3(1.0, 1.0, 1.0);
-            } else {
-                vec3 lightDirection = normalize(uPointLightingLocation - mvPosition.xyz);
-                vec3 transformedNormal = uNMatrix * aVertexNormal;
-                float directionalLightWeighting = max(dot(transformedNormal, lightDirection), 0.0);
-                vLightWeighting = uAmbientColor + uPointLightingColor * directionalLightWeighting;
-            }
+            vTransformedNormal = uNMatrix * aVertexNormal;
         }
     </script>
 </head>
@@ -57,6 +73,7 @@
 </div>
 <br />
 <input type="checkbox" id="lighting" checked onchange="drawScene()"/> Use lighting<br/>
+<input type="text" id="shininess" value="32.0" />Shininess<br/>
 <br/>
 Point light:
 <table style="border: 0; padding: 10px;">
@@ -67,10 +84,16 @@ Point light:
         <td>Z: <input id="lightPositionZ" type="number" step="0.1" value="0.0"  onchange="drawScene()"/>
     </tr>
     <tr>
-        <td><b>Colour:</b>
-        <td>R: <input id="pointR" type="number" step="0.05" value="0.8"  onchange="drawScene()"/>
-        <td>G: <input id="pointG" type="number" step="0.05" value="0.8"  onchange="drawScene()"/>
-        <td>B: <input id="pointB" type="number" step="0.05" value="0.8"  onchange="drawScene()"/>
+        <td><b>Specular colour:</b>
+        <td>R: <input type="text" id="specularR" value="0.8" />
+        <td>G: <input type="text" id="specularG" value="0.8" />
+        <td>B: <input type="text" id="specularB" value="0.8" />
+    </tr>
+    <tr>
+        <td><b>Diffuse colour:</b>
+        <td>R: <input type="text" id="diffuseR" value="0.8" />
+        <td>G: <input type="text" id="diffuseG" value="0.8" />
+        <td>B: <input type="text" id="diffuseB" value="0.8" />
     </tr>
 </table>
 Ambient light:
